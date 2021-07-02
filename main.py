@@ -1,12 +1,13 @@
 # This repository for final project
+import pandas as pd
 
+# Student 1 - Laly Datsyuk
+# Student 2 - Maya Nurani
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+# Part A ex. 1 - Reading file content to data frame
+try:
+    flights_df = pd.read_csv('flights.csv')
+except:
+    print("Failed to read the file")
+    flights_df = []  # In case the file is not read
 
