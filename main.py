@@ -1,5 +1,7 @@
 # This repository for final project
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 
 
@@ -21,11 +23,29 @@ print(flights_clustering_df.describe())
 # unique source and destination flights
 print(flights_clustering_df['Source'].unique())
 print(flights_clustering_df['Destination'].unique())
-print(flights_clustering_df.groupby(['Source', 'Destination']).size().reset_index().rename(columns={0: 'count_unique'}))
+unique_flights_df = flights_clustering_df.groupby(['Source', 'Destination']).size().reset_index().rename(columns={0: 'count_unique'})
+print(unique_flights_df)
+
+unique_labels = []
+
+
+# A function that creates string labels from the unique flights
+def unique_flights_labels():
+    strlabel = unique_flights_df['Source'].values+' To '+unique_flights_df['Destination'].values
+    unique_labels.append(strlabel)
+    return
+
+
+unique_count = np.asarray(unique_flights_df['count_unique'])
+unique_flights_labels()
+print(unique_labels)
+print(unique_count)
+plt.pie(unique_count, labels=unique_labels[0], autopct='%1.2f%%')
+plt.show()
 
 # Range of price
-min_price = flights_clustering_df['price'].min()
-max_price = flights_clustering_df['price'].max()
+min_price = flights_clustering_df['Price'].min()
+max_price = flights_clustering_df['Price'].max()
 
 ### Data Preparation ###
 
