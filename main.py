@@ -8,15 +8,26 @@ from sklearn.preprocessing import MinMaxScaler
 
 # Part A ex. 1 - Reading file content to data frame
 try:
-    flights_clustering_df = pd.read_csv('flights.csv')
+    flights_df = pd.read_csv('flights.csv')
 except:
     print("Failed to read the file")
-    flights_clustering_df = []  # In case the file is not read
+    flights_df = []  # In case the file is not read
+
+# Removing null rows
+if (flights_df.isnull().values.any()):
+    print("Print columns that contain NaN values",
+          flights_df.columns[flights_df.isnull().any()].tolist())
+    flights_df = flights_df.dropna()
+else:
+    print('There is no empty values in this dataframe')
+
+# Save copy for clustering df
+flights_clustering_df = flights_df.copy()
 
 ### Data Understanding ###
-print("There are", flights_clustering_df.shape[0], "rows and", flights_clustering_df.shape[1], "columns in this file.")
-print("Columns names are: ", list(flights_clustering_df.columns))
-print(flights_clustering_df.describe())
+print("There are", flights_df.shape[0], "rows and", flights_df.shape[1], "columns in this file.")
+print("Columns names are: ", list(flights_df.columns))
+print(flights_df.describe())
 
 months_dict = {"01": "January", "02": "February", "03": "March", "04": "April", "05": "May", "06": "June",
                "07": "July", "08": "August", "09": "September", "10": "October", "11": "November", "12": "December"}
@@ -30,22 +41,22 @@ def change_date_format(datestr):
 
 
 # Adding a column to our df which contains the date month
-flights_clustering_df['Date Month'] = flights_clustering_df['Date'].apply(lambda y: change_date_format(y))
-print(flights_clustering_df)
+flights_df['Date Month'] = flights_df['Date'].apply(lambda y: change_date_format(y))
+print(flights_df)
 
 # Avg ticket price per month
-flights_clustering_df.groupby(['Date Month']).mean().plot(kind='bar', color='red', rot=45)
+flights_df.groupby(['Date Month']).mean().plot(kind='bar', color='red', rot=45)
 plt.title('Average ticket price per month')
 plt.grid()
 plt.show()
 
 # Range of price
-min_price = flights_clustering_df['Price'].min()
-max_price = flights_clustering_df['Price'].max()
+min_price = flights_df['Price'].min()
+max_price = flights_df['Price'].max()
 
 # TODO: לאחד חברות
 # Avg ticket price per company
-flights_clustering_df.groupby(['Airline']).mean().plot(kind='bar', color='orange', rot=45)
+flights_df.groupby(['Airline']).mean().plot(kind='bar', color='orange', rot=45)
 plt.title('Average ticket price per company')
 plt.grid()
 plt.show()
@@ -57,14 +68,14 @@ def count_routes(routes_str):
     return (len(routes_amount))
 
 
-flights_clustering_df['Routes Amount'] = flights_clustering_df['Route'].apply(lambda z: count_routes(z))
-print(flights_clustering_df[['Routes Amount', 'Route']])
-flights_clustering_df.groupby(['Routes Amount']).mean().plot(kind='bar', color='green')
+flights_df['Routes Amount'] = flights_df['Route'].apply(lambda z: count_routes(z))
+print(flights_df[['Routes Amount', 'Route']])
+flights_df.groupby(['Routes Amount']).mean().plot(kind='bar', color='green')
 plt.title('Average ticket price per route amount')
 plt.show()
 
 # Unique source and destination flights
-unique_flights_df = flights_clustering_df.groupby(['Source', 'Destination']).size().reset_index().rename(
+unique_flights_df = flights_df.groupby(['Source', 'Destination']).size().reset_index().rename(
     columns={0: 'count_unique'})
 unique_labels = []
 
@@ -97,25 +108,17 @@ def time_format(str):
     return total_time
 
 
-flights_clustering_df['Duration Minutes'] = flights_clustering_df['Duration'].apply(lambda x: time_format(x))
-print(flights_clustering_df[['Duration', 'Duration Minutes']])
+flights_df['Duration Minutes'] = flights_df['Duration'].apply(lambda x: time_format(x))
+print(flights_df[['Duration', 'Duration Minutes']])
 
 ### Data Preparation ###
-
-# Removing null rows
-if (flights_clustering_df.isnull().values.any()):
-    print("Print columns that contain NaN values",
-          flights_clustering_df.columns[flights_clustering_df.isnull().any()].tolist())
-    flights_clustering_df = flights_clustering_df.dropna()
-else:
-    print('There is no empty values in this dataframe')
 
 # duplicate df for clustering and classification df
 flights_class_df = flights_clustering_df.copy()
 
 # Edit clustering data
 flights_clustering_df.drop(flights_clustering_df.columns.difference(['Airline', 'Source', 'Destination', 'Price']), 1,
-                           inplace=True)
+                inplace=True)
 print(flights_clustering_df.head())
 
 # Data one hot encoding
@@ -124,6 +127,7 @@ flights_clustering_df = pd.get_dummies(flights_clustering_df, columns=['Airline'
 
 scaler = MinMaxScaler()
 normalize_data = pd.DataFrame(scaler.fit_transform(flights_clustering_df), columns=flights_clustering_df.columns)
+
 
 # print for verifications:
 print("Columns names are: ", list(flights_clustering_df.columns))
