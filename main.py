@@ -45,15 +45,29 @@ plt.show()
 min_price = flights_clustering_df['Price'].min()
 max_price = flights_clustering_df['Price'].max()
 
+#TODO: לאחד חברות
 # Avg ticket price per company
 flights_clustering_df.groupby(['Airline']).mean().plot(kind='bar', color='orange', rot=45)
 plt.title('Average ticket price per company')
 plt.grid()
 plt.show()
 
-# unique source and destination flights
-unique_flights_df = flights_clustering_df.groupby(['Source', 'Destination']).size().reset_index().rename(columns={0: 'count_unique'})
 
+# Unique Routes
+def count_routes(routes_str):
+    routes_amount = str(routes_str).split(',')
+    return (len(routes_amount))
+
+
+flights_clustering_df['Routes Amount'] = flights_clustering_df['Route'].apply(lambda z: count_routes(z))
+print(flights_clustering_df[['Routes Amount', 'Route']])
+flights_clustering_df.groupby(['Routes Amount']).mean().plot(kind='bar', color='green')
+plt.title('Average ticket price per route amount')
+plt.show()
+
+
+# Unique source and destination flights
+unique_flights_df = flights_clustering_df.groupby(['Source', 'Destination']).size().reset_index().rename(columns={0: 'count_unique'})
 unique_labels = []
 
 
@@ -62,6 +76,7 @@ def unique_flights_labels():
     strlabel = unique_flights_df['Source'].values+' To '+unique_flights_df['Destination'].values
     unique_labels.append(strlabel)
     return
+
 
 # unique flights pie chart
 unique_count = np.asarray(unique_flights_df['count_unique'])
@@ -82,6 +97,7 @@ def time_format(str):
     else:
         total_time = int(time_lst[0])
     return total_time
+
 
 flights_clustering_df['Duration Minutes'] = flights_clustering_df['Duration'].apply(lambda x: time_format(x))
 print(flights_clustering_df[['Duration', 'Duration Minutes']])
