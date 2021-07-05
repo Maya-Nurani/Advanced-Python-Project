@@ -52,7 +52,6 @@ plt.title('Average ticket price per company')
 plt.grid()
 plt.show()
 
-
 # Unique Routes
 def count_routes(routes_str):
     routes_amount = str(routes_str).split(',')
