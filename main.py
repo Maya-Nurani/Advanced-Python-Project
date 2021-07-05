@@ -1,9 +1,7 @@
-# This repository for final project
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
-
 
 # Student 1 - Laly Datsyuk
 # Student 2 - Maya Nurani
@@ -45,12 +43,13 @@ plt.show()
 min_price = flights_clustering_df['Price'].min()
 max_price = flights_clustering_df['Price'].max()
 
-#TODO: לאחד חברות
+# TODO: לאחד חברות
 # Avg ticket price per company
 flights_clustering_df.groupby(['Airline']).mean().plot(kind='bar', color='orange', rot=45)
 plt.title('Average ticket price per company')
 plt.grid()
 plt.show()
+
 
 # Unique Routes
 def count_routes(routes_str):
@@ -64,15 +63,15 @@ flights_clustering_df.groupby(['Routes Amount']).mean().plot(kind='bar', color='
 plt.title('Average ticket price per route amount')
 plt.show()
 
-
 # Unique source and destination flights
-unique_flights_df = flights_clustering_df.groupby(['Source', 'Destination']).size().reset_index().rename(columns={0: 'count_unique'})
+unique_flights_df = flights_clustering_df.groupby(['Source', 'Destination']).size().reset_index().rename(
+    columns={0: 'count_unique'})
 unique_labels = []
 
 
 # A function that creates string labels from the unique flights
 def unique_flights_labels():
-    strlabel = unique_flights_df['Source'].values+' To '+unique_flights_df['Destination'].values
+    strlabel = unique_flights_df['Source'].values + ' To ' + unique_flights_df['Destination'].values
     unique_labels.append(strlabel)
     return
 
@@ -90,9 +89,9 @@ def time_format(str):
     str = str.replace('h', '')
     str = str.replace('m', '')
     time_lst = str.split()
-    time_lst[0] = int(time_lst[0])*60
-    if len(time_lst)>1:
-        total_time = int(time_lst[0])+int(time_lst[1])
+    time_lst[0] = int(time_lst[0]) * 60
+    if len(time_lst) > 1:
+        total_time = int(time_lst[0]) + int(time_lst[1])
     else:
         total_time = int(time_lst[0])
     return total_time
@@ -105,7 +104,8 @@ print(flights_clustering_df[['Duration', 'Duration Minutes']])
 
 # Removing null rows
 if (flights_clustering_df.isnull().values.any()):
-    print("Print columns that contain NaN values", flights_clustering_df.columns[flights_clustering_df.isnull().any()].tolist())
+    print("Print columns that contain NaN values",
+          flights_clustering_df.columns[flights_clustering_df.isnull().any()].tolist())
     flights_clustering_df = flights_clustering_df.dropna()
 else:
     print('There is no empty values in this dataframe')
@@ -114,18 +114,17 @@ else:
 flights_class_df = flights_clustering_df.copy()
 
 # Edit clustering data
-flights_clustering_df.drop(flights_clustering_df.columns.difference(['Airline','Source','Destination','Price']), 1, inplace=True)
+flights_clustering_df.drop(flights_clustering_df.columns.difference(['Airline', 'Source', 'Destination', 'Price']), 1,
+                           inplace=True)
 print(flights_clustering_df.head())
 
-
 # Data one hot encoding
-flights_clustering_df = pd.get_dummies(flights_clustering_df, columns=['Airline','Source','Destination'])
+flights_clustering_df = pd.get_dummies(flights_clustering_df, columns=['Airline', 'Source', 'Destination'])
 # TODO: check if need price column or not
 
 scaler = MinMaxScaler()
 normalize_data = pd.DataFrame(scaler.fit_transform(flights_clustering_df), columns=flights_clustering_df.columns)
 
-
-#print for verifications:
+# print for verifications:
 print("Columns names are: ", list(flights_clustering_df.columns))
 print(flights_clustering_df.head())
