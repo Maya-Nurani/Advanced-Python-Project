@@ -132,3 +132,14 @@ normalize_data = pd.DataFrame(scaler.fit_transform(flights_clustering_df), colum
 # print for verifications:
 print("Columns names are: ", list(flights_clustering_df.columns))
 print(flights_clustering_df.head())
+
+# Classification df
+unique_airline = flights_class_df['Airline'].unique()
+print(unique_airline)
+airline_dict = dict(zip(unique_airline,range(1,len(unique_airline)+1)))
+print(airline_dict)
+flights_class_df['Airline'].replace(airline_dict, inplace=True)
+
+
+#unique_count.index(airline)
+#flights_class_df['Airline'] = flights_df['Airline'].apply(lambda airline: airline = unique_count.index(airline))
