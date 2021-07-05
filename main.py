@@ -19,8 +19,20 @@ print(flights_clustering_df.describe())
 # unique source and destination flights
 print(flights_clustering_df['Source'].unique())
 print(flights_clustering_df['Destination'].unique())
-print(flights_clustering_df.groupby(['Source', 'Destination']).size().reset_index().rename(columns={0: 'count_unique'}))
+df_unique_flights = flights_clustering_df.groupby(['Source', 'Destination']).size().reset_index().rename(columns={0: 'count_unique'})
+print(df_unique_flights)
 
+labels = []
+
+
+def pieLabels(df):
+    labels.append(str((df['Source'] +' to '+ df['Destination'])))
+    return
+
+
+df_unique_flights.apply(lambda x: pieLabels(df_unique_flights))
+
+print(labels)
 
 ### Data Preparation ###
 
