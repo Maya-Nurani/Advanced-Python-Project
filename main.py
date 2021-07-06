@@ -29,13 +29,13 @@ print("There are", flights_df.shape[0], "rows and", flights_df.shape[1], "column
 print("Columns names are: ", list(flights_df.columns))
 print(flights_df.describe())
 
-months_dict = {"01": "January", "02": "February", "03": "March", "04": "April", "05": "May", "06": "June",
-               "07": "July", "08": "August", "09": "September", "10": "October", "11": "November", "12": "December"}
+months_dict = {1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
+               7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"}
 
 
 def change_date_format(datestr):
     date_lst = datestr.split('/')
-    month = date_lst[1]
+    month = int(date_lst[1])
     month = months_dict[month]
     return month
 
@@ -118,7 +118,7 @@ flights_class_df = flights_clustering_df.copy()
 
 # Edit clustering data
 flights_clustering_df.drop(flights_clustering_df.columns.difference(['Airline', 'Source', 'Destination', 'Price']), 1,
-                inplace=True)
+                           inplace=True)
 print(flights_clustering_df.head())
 
 # Data one hot encoding
@@ -128,22 +128,21 @@ flights_clustering_df = pd.get_dummies(flights_clustering_df, columns=['Airline'
 scaler = MinMaxScaler()
 normalize_data = pd.DataFrame(scaler.fit_transform(flights_clustering_df), columns=flights_clustering_df.columns)
 
-
 # print for verifications:
 print("Columns names are: ", list(flights_clustering_df.columns))
 print(flights_clustering_df.head())
 
 # Classification df
 unique_airline = flights_class_df['Airline'].unique()
-print(unique_airline)
-airline_dict = dict(zip(unique_airline,range(1,len(unique_airline)+1)))
-print(airline_dict)
+airline_dict = dict(zip(unique_airline, range(1, len(unique_airline) + 1)))
 flights_class_df['Airline'].replace(airline_dict, inplace=True)
 
 # Data one hot encoding
-flights_class_df = pd.get_dummies(flights_class_df, columns=['Source', 'Destination', 'Route', 'Duration', 'Total_Stops'])
+flights_class_df = pd.get_dummies(flights_class_df,
+                                  columns=['Source', 'Destination', 'Route', 'Duration', 'Total_Stops'])
 
-def convertPrice (price):
+
+def convertPrice(price):
     if price < 7000:
         price_rank = 1
     elif price >= 7000 and price <= 14000:
@@ -152,4 +151,15 @@ def convertPrice (price):
         price_rank = 3
     return price_rank
 
-flights_class_df['Price'] = flights_df['Price'].apply()
+
+flights_class_df['Price'] = flights_df['Price'].apply((lambda price: convertPrice(price)))
+
+# Change dates to number of month
+flights_class_df['Date'] = flights_class_df['Date'].apply(lambda date: change_date_format(date))
+
+# Remove time columns
+flights_class_df.drop(columns=['Dep_Time', 'Arrival_Time', 'Duration'])
+
+print(flights_class_df.head())
+
+
