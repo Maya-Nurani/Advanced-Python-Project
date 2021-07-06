@@ -6,6 +6,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import datasets, linear_model
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
 
 
 # Student 1 - Laly Datsyuk
@@ -127,7 +129,8 @@ flights_df['Duration Minutes'] = flights_df['Duration'].apply(lambda x: time_for
 print(flights_df[['Duration', 'Duration Minutes']])
 
 # Checking the distribution of different duration flights
-flights_df['Duration Minutes'].hist()
+flights_df['Duration Minutes'].hist(color="brown")
+plt.title('Distribution of flights duration')
 plt.show()
 
 ### Data Preparation ###
@@ -150,6 +153,7 @@ normalize_data = pd.DataFrame(scaler.fit_transform(flights_clustering_df), colum
 # print for verifications:
 print("(Clustering df) Columns names are: ", list(flights_clustering_df.columns))
 print(flights_clustering_df.head())
+
 
 # Classification df
 unique_airline = flights_class_df['Airline'].unique()
@@ -191,6 +195,33 @@ diabetes_X_test = diabetes_X[-20:]
 #tree = DecisionTreeClassifier()
 #tree.fit(X_train, y_train)
 
+### Clustering ###
 
+cluster_dropped = flights_clustering_df.drop(columns=['Price'])
+
+def run_kmeans(df):
+    sum_squared = []
+    K = range(2, 11)
+    for i in K:
+        kmeans = KMeans(n_clusters= i, init="k-means++")
+        kmeans.fit(df)
+        sum_squared.append(kmeans.inertia_)
+    return pd.DataFrame(
+        {
+            "K": K,
+            "SSE": sum_squared,
+        }
+    )
+
+
+measures = run_kmeans(cluster_dropped)
+measures.set_index("K", inplace=True)
+measures["SSE"].plot()
+plt.show()
+
+kmeans = KMeans(n_clusters=3, init='k-means++')
+kmeans.fit(cluster_dropped)
+normalize_data['Cluster'] = kmeans.labels_
+print (cluster_dropped)
 
 
