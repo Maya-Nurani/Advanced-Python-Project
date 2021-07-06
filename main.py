@@ -24,10 +24,32 @@ else:
 # Save copy for clustering df
 flights_clustering_df = flights_df.copy()
 
-### Data Understanding ###
+### Data Understanding and Analysis ###
 print("There are", flights_df.shape[0], "rows and", flights_df.shape[1], "columns in this file.")
 print("Columns names are: ", list(flights_df.columns))
 print(flights_df.describe())
+
+# Amount of flights per airline
+flights_df['Airline'].value_counts().plot(kind='bar', rot=45, color='purple')
+plt.grid()
+plt.title('Number of flights per airline')
+plt.show()
+
+
+# TODO: לאחד חברות
+# Avg and maximum ticket price per airline - how does the airline affect the price?
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax2 = plt.twinx(ax)
+flights_df.groupby(['Airline']).max().plot(kind='bar', color='blue', rot=45, ax=ax, position=1,
+                                           width=0.3, label='Maximum Price')
+flights_df.groupby(['Airline']).mean().plot(kind='bar', color='orange', rot=45, ax=ax2, position=0,
+                                            width=0.3, label='Average Price')
+plt.title('Average ticket price compared to the maximum price per airline')
+ax.legend('M', loc='upper left')
+ax2.legend('A', loc='upper right')
+plt.grid()
+plt.show()
 
 months_dict = {"01": "January", "02": "February", "03": "March", "04": "April", "05": "May", "06": "June",
                "07": "July", "08": "August", "09": "September", "10": "October", "11": "November", "12": "December"}
@@ -44,28 +66,17 @@ def change_date_format(datestr):
 flights_df['Date Month'] = flights_df['Date'].apply(lambda y: change_date_format(y))
 print(flights_df)
 
-# Avg ticket price per month
+# Average ticket price per month - checking for month affect on ticker price
 flights_df.groupby(['Date Month']).mean().plot(kind='bar', color='red', rot=45)
 plt.title('Average ticket price per month')
 plt.grid()
 plt.show()
 
-# Range of price
-min_price = flights_df['Price'].min()
-max_price = flights_df['Price'].max()
 
-# TODO: לאחד חברות
-# Avg ticket price per company
-flights_df.groupby(['Airline']).mean().plot(kind='bar', color='orange', rot=45)
-plt.title('Average ticket price per company')
-plt.grid()
-plt.show()
-
-
-# Unique Routes
+# Does the amount of routes affects the ticket price?
 def count_routes(routes_str):
     routes_amount = str(routes_str).split(',')
-    return (len(routes_amount))
+    return len(routes_amount)
 
 
 flights_df['Routes Amount'] = flights_df['Route'].apply(lambda z: count_routes(z))
@@ -80,7 +91,7 @@ unique_flights_df = flights_df.groupby(['Source', 'Destination']).size().reset_i
 unique_labels = []
 
 
-# A function that creates string labels from the unique flights
+# A function that creates string labels from the unique flights - for the pie graph
 def unique_flights_labels():
     strlabel = unique_flights_df['Source'].values + ' To ' + unique_flights_df['Destination'].values
     unique_labels.append(strlabel)
@@ -110,6 +121,10 @@ def time_format(str):
 
 flights_df['Duration Minutes'] = flights_df['Duration'].apply(lambda x: time_format(x))
 print(flights_df[['Duration', 'Duration Minutes']])
+
+# Checking the distribution of different duration flights
+flights_df['Duration Minutes'].hist()
+plt.show()
 
 ### Data Preparation ###
 
