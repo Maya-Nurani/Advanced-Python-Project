@@ -58,9 +58,6 @@ ax2.legend('A', loc='upper right')
 plt.grid()
 plt.show()
 
-months_dict = {"01": "January", "02": "February", "03": "March", "04": "April", "05": "May", "06": "June",
-               "07": "July", "08": "August", "09": "September", "10": "October", "11": "November", "12": "December"}
-
 
 def change_date_format(datestr):
     date_lst = datestr.split('/')
@@ -151,7 +148,7 @@ scaler = MinMaxScaler()
 normalize_data = pd.DataFrame(scaler.fit_transform(flights_clustering_df), columns=flights_clustering_df.columns)
 
 # print for verifications:
-print("Columns names are: ", list(flights_clustering_df.columns))
+print("(Clustering df) Columns names are: ", list(flights_clustering_df.columns))
 print(flights_clustering_df.head())
 
 # Classification df
@@ -161,7 +158,7 @@ flights_class_df['Airline'].replace(airline_dict, inplace=True)
 
 # Data one hot encoding
 flights_class_df = pd.get_dummies(flights_class_df,
-                                  columns=['Source', 'Destination', 'Route', 'Duration', 'Total_Stops'])
+                                  columns=['Source', 'Destination', 'Total_Stops'])
 
 
 def convertPrice(price):
@@ -190,9 +187,9 @@ diabetes_X = diabetes.data[:, np.newaxis, 2]
 diabetes_X_train = diabetes_X[:-20]
 diabetes_X_test = diabetes_X[-20:]
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
-tree = DecisionTreeClassifier()
-tree.fit(X_train, y_train)
+#X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+#tree = DecisionTreeClassifier()
+#tree.fit(X_train, y_train)
 
 
 
