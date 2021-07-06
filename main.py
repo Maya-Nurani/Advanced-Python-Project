@@ -140,6 +140,16 @@ airline_dict = dict(zip(unique_airline,range(1,len(unique_airline)+1)))
 print(airline_dict)
 flights_class_df['Airline'].replace(airline_dict, inplace=True)
 
+# Data one hot encoding
+flights_class_df = pd.get_dummies(flights_class_df, columns=['Source', 'Destination', 'Route', 'Duration', 'Total_Stops'])
 
-#unique_count.index(airline)
-#flights_class_df['Airline'] = flights_df['Airline'].apply(lambda airline: airline = unique_count.index(airline))
+def convertPrice (price):
+    if price < 7000:
+        price_rank = 1
+    elif price >= 7000 and price <= 14000:
+        price_rank = 2
+    elif price > 14000:
+        price_rank = 3
+    return price_rank
+
+flights_class_df['Price'] = flights_df['Price'].apply()
