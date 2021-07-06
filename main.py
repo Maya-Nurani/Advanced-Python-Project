@@ -2,6 +2,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import datasets, linear_model
+
 
 # Student 1 - Laly Datsyuk
 # Student 2 - Maya Nurani
@@ -161,5 +166,17 @@ flights_class_df['Date'] = flights_class_df['Date'].apply(lambda date: change_da
 flights_class_df.drop(columns=['Dep_Time', 'Arrival_Time', 'Duration'])
 
 print(flights_class_df.head())
+
+# Create Training and Test Sets \ Split the data into training/testing sets
+diabetes = datasets.load_diabetes()
+diabetes_X = diabetes.data[:, np.newaxis, 2]
+diabetes_X_train = diabetes_X[:-20]
+diabetes_X_test = diabetes_X[-20:]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+tree = DecisionTreeClassifier()
+tree.fit(X_train, y_train)
+
+
 
 
