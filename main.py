@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.datasets import make_blobs
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
@@ -177,20 +178,33 @@ flights_class_df['Price'] = flights_df['Price'].apply((lambda price: convertPric
 flights_class_df['Date'] = flights_class_df['Date'].apply(lambda date: change_date_format(date))
 
 # Remove time columns
-flights_class_df.drop(columns=['Dep_Time', 'Arrival_Time', 'Duration'])
+flights_class_df = flights_class_df.drop(columns=['Dep_Time', 'Arrival_Time', 'Duration'])
 
 print(flights_class_df.head())
 
 # Create Training and Test Sets \ Split the data into training/testing sets
+X, y = make_blobs(n_samples=600, centers=4, random_state=0, cluster_std=1.0)
+plt.scatter(X[:, 0], X[:, 1], c=y)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+
+print("Train:", X_train.shape, "Test: ", X_test.shape)
+
+# Training:
+# tree = DecisionTreeClassifier()
+# tree.fit(X_train, y_train)
+# y_pred = tree.predict(X_test)
+
+#print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+# metrics.confusion_matrix(y_test, y_pred)
+
+
+# Random Forest
+forest = RandomForestClassifier(n_estimators=25)
+forest.fit(X_train, y_train)
+
+
+# Google > remove
 diabetes = datasets.load_diabetes()
 diabetes_X = diabetes.data[:, np.newaxis, 2]
 diabetes_X_train = diabetes_X[:-20]
 diabetes_X_test = diabetes_X[-20:]
-
-#X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
-#tree = DecisionTreeClassifier()
-#tree.fit(X_train, y_train)
-
-
-
-
