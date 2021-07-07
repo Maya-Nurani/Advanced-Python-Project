@@ -1,11 +1,14 @@
 import pandas as pd
 import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import datasets, linear_model
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
 
 
 # Student 1 - Laly Datsyuk
@@ -36,6 +39,7 @@ print(flights_df.describe())
 
 months_dict = {1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
                7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"}
+
 # Amount of flights per airline
 flights_df['Airline'].value_counts().plot(kind='bar', rot=45, color='purple')
 plt.grid()
@@ -127,7 +131,8 @@ flights_df['Duration Minutes'] = flights_df['Duration'].apply(lambda x: time_for
 print(flights_df[['Duration', 'Duration Minutes']])
 
 # Checking the distribution of different duration flights
-flights_df['Duration Minutes'].hist()
+flights_df['Duration Minutes'].hist(color="brown")
+plt.title('Distribution of flights duration')
 plt.show()
 
 ### Data Preparation ###
@@ -142,14 +147,14 @@ print(flights_clustering_df.head())
 
 # Data one hot encoding
 flights_clustering_df = pd.get_dummies(flights_clustering_df, columns=['Airline', 'Source', 'Destination'])
-# TODO: check if need price column or not
 
 scaler = MinMaxScaler()
-normalize_data = pd.DataFrame(scaler.fit_transform(flights_clustering_df), columns=flights_clustering_df.columns)
+normalized_data = pd.DataFrame(scaler.fit_transform(flights_clustering_df), columns=flights_clustering_df.columns)
 
 # print for verifications:
 print("(Clustering df) Columns names are: ", list(flights_clustering_df.columns))
 print(flights_clustering_df.head())
+
 
 # Classification df
 unique_airline = flights_class_df['Airline'].unique()
@@ -191,6 +196,38 @@ diabetes_X_test = diabetes_X[-20:]
 #tree = DecisionTreeClassifier()
 #tree.fit(X_train, y_train)
 
+### Clustering ###
+
+normalized_dropped = normalized_data.drop(columns=['Price'])
+
+def run_kmeans(df):
+    sum_squared = []
+    K = range(2, 11)
+    for i in K:
+        kmeans = KMeans(n_clusters= i, init="k-means++")
+        kmeans.fit(df)
+        sum_squared.append(kmeans.inertia_)
+    return pd.DataFrame(
+        {
+            "K": K,
+            "SSE": sum_squared,
+        }
+    )
 
 
+measures = run_kmeans(normalized_dropped)
+measures.set_index("K", inplace=True)
+measures["SSE"].plot()
+plt.show()
 
+kmeans = KMeans(n_clusters=3, init='k-means++')
+kmeans.fit(normalized_dropped)
+flights_clustering_df['Cluster'] = kmeans.labels_
+
+clusters = flights_clustering_df.groupby('Cluster')
+print(clusters.describe())
+print(clusters.max())
+print(clusters.min())
+
+sns.pairplot(flights_clustering_df[['Price', 'Cluster']], hue="Cluster", markers=["o", "s", "D"])
+plt.show()
