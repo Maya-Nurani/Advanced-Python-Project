@@ -189,19 +189,20 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
 
 print("Train:", X_train.shape, "Test: ", X_test.shape)
 
-# Training:
+# Training: (Decision Tree)
 # tree = DecisionTreeClassifier()
 # tree.fit(X_train, y_train)
 # y_pred = tree.predict(X_test)
-
-#print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
-# metrics.confusion_matrix(y_test, y_pred)
 
 
 # Random Forest
 forest = RandomForestClassifier(n_estimators=25)
 forest.fit(X_train, y_train)
+y_pred = forest.predict(X_test)
 
+
+# print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+# metrics.confusion_matrix(y_test, y_pred)
 
 # Google > remove
 diabetes = datasets.load_diabetes()
