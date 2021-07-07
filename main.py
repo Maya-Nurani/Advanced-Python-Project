@@ -39,6 +39,7 @@ print(flights_df.describe())
 
 months_dict = {1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
                7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"}
+
 # Amount of flights per airline
 flights_df['Airline'].value_counts().plot(kind='bar', rot=45, color='purple')
 plt.grid()
@@ -225,6 +226,8 @@ flights_clustering_df['Cluster'] = kmeans.labels_
 
 clusters = flights_clustering_df.groupby('Cluster')
 print(clusters.describe())
+print(clusters.max())
+print(clusters.min())
 
 sns.pairplot(flights_clustering_df[['Price', 'Cluster']], hue="Cluster", markers=["o", "s", "D"])
 plt.show()
