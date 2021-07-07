@@ -40,14 +40,28 @@ print(flights_df.describe())
 months_dict = {1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
                7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"}
 
+print(flights_df['Airline'].unique()) # a check for duplicated airlines
+
 # Amount of flights per airline
 flights_df['Airline'].value_counts().plot(kind='bar', rot=45, color='purple')
 plt.grid()
 plt.title('Number of flights per airline')
 plt.show()
 
+duplicated_companies = {'Vistara Premium economy': 'Vistara',
+                        'Jet Airways Business': 'Jet Airways', 'Multiple carriers Premium economy': 'Multiple carriers'}
 
-# TODO: לאחד חברות
+
+# a function that combine duplicated airlines
+def combine_duplicates(airline):
+    if airline in duplicated_companies:
+        airline = duplicated_companies[airline]
+    return airline
+
+
+flights_df['Airline'] = flights_df['Airline'].apply(lambda d: combine_duplicates(d))
+
+
 # Avg and maximum ticket price per airline - how does the airline affect the price?
 fig = plt.figure()
 ax = fig.add_subplot(111)
