@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
@@ -145,10 +146,9 @@ print(flights_clustering_df.head())
 
 # Data one hot encoding
 flights_clustering_df = pd.get_dummies(flights_clustering_df, columns=['Airline', 'Source', 'Destination'])
-# TODO: check if need price column or not
 
 scaler = MinMaxScaler()
-normalize_data = pd.DataFrame(scaler.fit_transform(flights_clustering_df), columns=flights_clustering_df.columns)
+normalized_data = pd.DataFrame(scaler.fit_transform(flights_clustering_df), columns=flights_clustering_df.columns)
 
 # print for verifications:
 print("(Clustering df) Columns names are: ", list(flights_clustering_df.columns))
@@ -197,7 +197,7 @@ diabetes_X_test = diabetes_X[-20:]
 
 ### Clustering ###
 
-cluster_dropped = flights_clustering_df.drop(columns=['Price'])
+normalized_dropped = normalized_data.drop(columns=['Price'])
 
 def run_kmeans(df):
     sum_squared = []
@@ -214,14 +214,14 @@ def run_kmeans(df):
     )
 
 
-measures = run_kmeans(cluster_dropped)
+measures = run_kmeans(normalized_dropped)
 measures.set_index("K", inplace=True)
 measures["SSE"].plot()
 plt.show()
 
 kmeans = KMeans(n_clusters=3, init='k-means++')
-kmeans.fit(cluster_dropped)
-normalize_data['Cluster'] = kmeans.labels_
-print (cluster_dropped)
+kmeans.fit(normalized_dropped)
+flights_clustering_df['Cluster'] = kmeans.labels_
 
-
+clusters = flights_clustering_df.groupby('Cluster')
+print(clusters.describe())
