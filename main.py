@@ -6,8 +6,10 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn import datasets, linear_model
+from sklearn import metrics
 
+from sklearn import datasets, linear_model
+from sklearn.preprocessing import StandardScaler
 
 # Student 1 - Laly Datsyuk
 # Student 2 - Maya Nurani
@@ -37,11 +39,24 @@ print(flights_df.describe())
 
 months_dict = {1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
                7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"}
+
 # Amount of flights per airline
 flights_df['Airline'].value_counts().plot(kind='bar', rot=45, color='purple')
 plt.grid()
 plt.title('Number of flights per airline')
 plt.show()
+
+
+def change_date_format(datestr, expected_format):
+    if expected_format == str:
+        date_lst = datestr.split('/')
+        month = int(date_lst[1])
+        month = months_dict[month]
+
+    elif expected_format == int:
+        date_lst = datestr.split('/')
+        month = int(date_lst[1])
+    return month
 
 
 # TODO: לאחד חברות
@@ -59,16 +74,8 @@ ax2.legend('A', loc='upper right')
 plt.grid()
 plt.show()
 
-
-def change_date_format(datestr):
-    date_lst = datestr.split('/')
-    month = int(date_lst[1])
-    month = months_dict[month]
-    return month
-
-
 # Adding a column to our df which contains the date month
-flights_df['Date Month'] = flights_df['Date'].apply(lambda y: change_date_format(y))
+flights_df['Date Month'] = flights_df['Date'].apply(lambda date: change_date_format(date, str))
 print(flights_df)
 
 # Average ticket price per month - checking for month affect on ticker price
@@ -89,6 +96,24 @@ print(flights_df[['Routes Amount', 'Route']])
 flights_df.groupby(['Routes Amount']).mean().plot(kind='bar', color='green')
 plt.title('Average ticket price per route amount')
 plt.show()
+
+
+def count_stops(total_stops):
+    if total_stops == 'non-stop':
+         stops = 0
+    else:
+        stops = total_stops[0]
+    return int(stops) + 2
+
+
+# Compare route <> stops and check if they give us the same data:
+print(flights_df['Total_Stops'].unique())
+flights_df['Stops Amount'] = flights_df['Total_Stops'].apply(lambda stops: count_stops(stops))
+
+print(flights_df[['Stops Amount', 'Total_Stops']])
+
+print("Is Route and Total_Stops columns are indicate the same data? ", flights_df['Routes Amount'].equals(flights_df['Stops Amount']))
+
 
 # Unique source and destination flights
 unique_flights_df = flights_df.groupby(['Source', 'Destination']).size().reset_index().rename(
@@ -159,7 +184,7 @@ flights_class_df['Airline'].replace(airline_dict, inplace=True)
 
 # Data one hot encoding
 flights_class_df = pd.get_dummies(flights_class_df,
-                                  columns=['Source', 'Destination', 'Total_Stops'])
+                                  columns=['Source', 'Destination', 'Total_Stops', 'Additional_Info'])
 
 
 def convertPrice(price):
@@ -175,37 +200,49 @@ def convertPrice(price):
 flights_class_df['Price'] = flights_df['Price'].apply((lambda price: convertPrice(price)))
 
 # Change dates to number of month
-flights_class_df['Date'] = flights_class_df['Date'].apply(lambda date: change_date_format(date))
+flights_class_df['Date'] = flights_class_df['Date'].apply(lambda date: change_date_format(date, int))
 
 # Remove time columns
-flights_class_df = flights_class_df.drop(columns=['Dep_Time', 'Arrival_Time', 'Duration'])
+flights_class_df = flights_class_df.drop(columns=['Dep_Time', 'Arrival_Time', 'Duration', 'Route'])
 
 print(flights_class_df.head())
+class_columns = list(flights_class_df.columns)
+print("(class df) Columns names are: ", class_columns, "and number of columns: ", len(class_columns))
+# print(flights_class_df['Route'].nunique())
 
 # Create Training and Test Sets \ Split the data into training/testing sets
-X, y = make_blobs(n_samples=600, centers=4, random_state=0, cluster_std=1.0)
-plt.scatter(X[:, 0], X[:, 1], c=y)
+# X, y = make_blobs(n_samples=flights_class_df.shape[0], centers=4, random_state=0, cluster_std=1.0)
+# plt.scatter(X[:, 0], X[:, 1], c=y)
+
+X = flights_class_df.drop('Price', axis=1)
+y = flights_class_df['Price']
+feature_scaler = StandardScaler()
+# X_norm = feature_scaler.fit_transform(X)
+
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
 
 print("Train:", X_train.shape, "Test: ", X_test.shape)
-
-# Training: (Decision Tree)
-# tree = DecisionTreeClassifier()
-# tree.fit(X_train, y_train)
-# y_pred = tree.predict(X_test)
-
 
 # Random Forest
 forest = RandomForestClassifier(n_estimators=25)
 forest.fit(X_train, y_train)
 y_pred = forest.predict(X_test)
 
+# for part 5
+print("Accuracy:", metrics.accuracy_score(y_test, y_pred))
+print(metrics.confusion_matrix(y_test, y_pred))
 
-# print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
-# metrics.confusion_matrix(y_test, y_pred)
+print(forest.feature_importances_)
 
-# Google > remove
-diabetes = datasets.load_diabetes()
-diabetes_X = diabetes.data[:, np.newaxis, 2]
-diabetes_X_train = diabetes_X[:-20]
-diabetes_X_test = diabetes_X[-20:]
+importance_df = pd.DataFrame({
+    "Feature": X.columns,
+    # - "Feature": flights_class_df.coloumns, class_columns
+    "Importance": forest.feature_importances_
+})
+
+print(importance_df.sort_values(by=['Importance']))
+
+# Training: (Decision Tree)
+# tree = DecisionTreeClassifier()
+# tree.fit(X_train, y_train)
+# y_pred = tree.predict(X_test)
