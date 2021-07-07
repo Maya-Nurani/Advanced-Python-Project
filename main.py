@@ -225,3 +225,6 @@ flights_clustering_df['Cluster'] = kmeans.labels_
 
 clusters = flights_clustering_df.groupby('Cluster')
 print(clusters.describe())
+
+sns.pairplot(flights_clustering_df[['Price', 'Cluster']], hue="Cluster", markers=["o", "s", "D"])
+plt.show()
