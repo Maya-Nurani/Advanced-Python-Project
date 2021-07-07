@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import MinMaxScaler
@@ -10,6 +11,9 @@ from sklearn import metrics
 
 from sklearn import datasets, linear_model
 from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+
 
 # Student 1 - Laly Datsyuk
 # Student 2 - Maya Nurani
@@ -40,11 +44,17 @@ print(flights_df.describe())
 months_dict = {1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
                7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"}
 
+print(flights_df['Airline'].unique()) # a check for duplicated airlines
+
+
 # Amount of flights per airline
 flights_df['Airline'].value_counts().plot(kind='bar', rot=45, color='purple')
 plt.grid()
 plt.title('Number of flights per airline')
 plt.show()
+
+duplicated_companies = {'Vistara Premium economy': 'Vistara',
+                        'Jet Airways Business': 'Jet Airways', 'Multiple carriers Premium economy': 'Multiple carriers'}
 
 
 def change_date_format(datestr, expected_format):
@@ -59,7 +69,16 @@ def change_date_format(datestr, expected_format):
     return month
 
 
-# TODO: לאחד חברות
+# a function that combine duplicated airlines
+def combine_duplicates(airline):
+    if airline in duplicated_companies:
+        airline = duplicated_companies[airline]
+    return airline
+
+
+flights_df['Airline'] = flights_df['Airline'].apply(lambda d: combine_duplicates(d))
+
+
 # Avg and maximum ticket price per airline - how does the airline affect the price?
 fig = plt.figure()
 ax = fig.add_subplot(111)
@@ -153,7 +172,8 @@ flights_df['Duration Minutes'] = flights_df['Duration'].apply(lambda x: time_for
 print(flights_df[['Duration', 'Duration Minutes']])
 
 # Checking the distribution of different duration flights
-flights_df['Duration Minutes'].hist()
+flights_df['Duration Minutes'].hist(color="brown")
+plt.title('Distribution of flights duration')
 plt.show()
 
 ### Data Preparation ###
@@ -168,14 +188,14 @@ print(flights_clustering_df.head())
 
 # Data one hot encoding
 flights_clustering_df = pd.get_dummies(flights_clustering_df, columns=['Airline', 'Source', 'Destination'])
-# TODO: check if need price column or not
 
 scaler = MinMaxScaler()
-normalize_data = pd.DataFrame(scaler.fit_transform(flights_clustering_df), columns=flights_clustering_df.columns)
+normalized_data = pd.DataFrame(scaler.fit_transform(flights_clustering_df), columns=flights_clustering_df.columns)
 
 # print for verifications:
 print("(Clustering df) Columns names are: ", list(flights_clustering_df.columns))
 print(flights_clustering_df.head())
+
 
 # Classification df
 unique_airline = flights_class_df['Airline'].unique()
@@ -240,6 +260,45 @@ importance_df = pd.DataFrame({
     "Importance": forest.feature_importances_
 })
 
+#X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+#tree = DecisionTreeClassifier()
+#tree.fit(X_train, y_train)
+
+### Clustering ###
+
+normalized_dropped = normalized_data.drop(columns=['Price'])
+
+def run_kmeans(df):
+    sum_squared = []
+    K = range(2, 11)
+    for i in K:
+        kmeans = KMeans(n_clusters= i, init="k-means++")
+        kmeans.fit(df)
+        sum_squared.append(kmeans.inertia_)
+    return pd.DataFrame(
+        {
+            "K": K,
+            "SSE": sum_squared,
+        }
+    )
+
+
+measures = run_kmeans(normalized_dropped)
+measures.set_index("K", inplace=True)
+measures["SSE"].plot()
+plt.show()
+
+kmeans = KMeans(n_clusters=3, init='k-means++')
+kmeans.fit(normalized_dropped)
+flights_clustering_df['Cluster'] = kmeans.labels_
+
+clusters = flights_clustering_df.groupby('Cluster')
+print(clusters.describe())
+print(clusters.max())
+print(clusters.min())
+
+sns.pairplot(flights_clustering_df[['Price', 'Cluster']], hue="Cluster", markers=["o", "s", "D"])
+plt.show()
 print(importance_df.sort_values(by=['Importance']))
 
 # Training: (Decision Tree)
